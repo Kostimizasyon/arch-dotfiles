@@ -1,0 +1,8 @@
+local apps = require("config.apps")
+hl.on("hyprland.start", function()
+	hl.exec_cmd(apps.bar)
+	hl.exec_cmd(apps.idle)
+	hl.exec_cmd(apps.wallpaper)
+	hl.exec_cmd("hyprctl setcursor " .. apps.cursor .. " " .. apps.cursorSize)
+	hl.exec_cmd(apps.fastFetch)
+end)

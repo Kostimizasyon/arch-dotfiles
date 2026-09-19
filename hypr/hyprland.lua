@@ -1,0 +1,27 @@
+----------------
+----  Config  --
+----------------
+
+hl.config({
+	misc = {
+		force_default_wallpaper = -1, -- Set to 0 or 1 to disable the anime mascot wallpapers
+		disable_hyprland_logo = false, -- If true disables the random hyprland logo / anime girl background. :(
+		disable_splash_rendering = true, -- disable splash text
+	},
+})
+
+require("config.monitors")
+
+require("config.keybinds")
+
+require("config.autostart")
+
+require("config.env")
+
+require("config.style")
+
+require("config.env")
+
+require("config.permissions")
+
+require("config.inputs")
