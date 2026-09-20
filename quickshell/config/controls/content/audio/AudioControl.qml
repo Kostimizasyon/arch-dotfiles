@@ -9,13 +9,29 @@ import "../../../Colors/"
 import "../../../Sizes/"
 
 // Could use set-mute at some point
+// setup a listener for the function row
+// after mute changing of vlaeus is nojt consistent
 
 PopupButton {
-    id: audioButton
-    icon.source: "./icons/volume.png"
+    id: root
+    property url image : "icons/volume.png"
+    property var volume : volumeText.text
+    
+
+    icon.source: "content/audio/" + image
+    label: volume
 
     required property var rootWindow  
     anchorWindow: rootWindow
+
+    function getIcon() {
+                let prefix = muteButton.isMuted ? "icons/volume-off.png" :
+                             volumeSlider.value == 0   ? "icons/volume-x.png" :
+                             volumeSlider.value < 0.25 ? "icons/volume.png" :
+                             volumeSlider.value < 0.60 ? "icons/volume-1.png" :
+                                                         "icons/volume-2.png"
+                return prefix 
+    }
 
     RowLayout {
 
@@ -24,7 +40,6 @@ PopupButton {
 
         ColumnLayout {
             spacing: 3
-            anchors.centerIn: parent
             // vertical volume slider
             Slider {
                 // lockguard
@@ -40,6 +55,7 @@ PopupButton {
                     if (!updatingFromSystem) {
                         setVolume.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", value.toFixed(2)]
                         setVolume.running = true
+                        getVolume.running = true
                     }
                 }
 
@@ -48,7 +64,7 @@ PopupButton {
                     id: setVolume
                     running: false
                 }
-
+                
                 // getting active sound %
                 Process {
                     id: getVolume
@@ -58,9 +74,11 @@ PopupButton {
                         onRead: (line) => {
                             let match = line.match(/Volume:\s*([\d.]+)/)
                             if (match) {
+                                if (muteButton.isMuted) muteButton.isMuted = false
                                 volumeSlider.updatingFromSystem = true
                                 volumeSlider.value = parseFloat(match[1])
                                 volumeSlider.updatingFromSystem = false
+                                root.image = root.getIcon()
                             }
                         }
                     }
@@ -70,39 +88,37 @@ PopupButton {
             // mute button
             Text {
                 id: volumeText
-                text: volumeSlider.value.toFixed(2)
+                text: "%" + volumeSlider.value.toFixed(2)
                 color: "white"
             }
 
             Button {
                 id: muteButton
                 property real preMuteVal: 0.5
-                property bool muted: false
+                property bool isMuted: false
 
 
-                icon.source: muted ? "./icons/volume-x.png" :
-                             volumeSlider.value == 0   ? "./icons/volume-off.png" :
-                             volumeSlider.value < 0.33 ? "./icons/volume.png" :
-                             volumeSlider.value < 0.66 ? "./icons/volume-1.png" :
-                                                         "./icons/volume-2.png"
+                icon.source: root.image
                 icon.height: Sizes.squareIcon
-                icon.width: Sizes.squareIcon
+                icon.width:  Sizes.squareIcon
 
                 background: Rectangle {
                     color: "transparent"
                 }
 
                 onClicked: {
-                    if (muted) {
-                        setVolume.commands = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", preMuteVal]
-                        volumeText.text = preMuteVal
-                        muted = false
+                    if (isMuted) {
+                        setVolume.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", preMuteVal]
+                        volumeText.text = volumeSlider.value.toFixed(2)
+                        volumeSlider.value = preMuteVal
+                        isMuted = false
+                        root.image = root.getIcon()
                     } else {
                         preMuteVal = volumeSlider.value
-                        setVolume.commands = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", 0]
-                        setVolume.running = true
+                        setVolume.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", 0]
                         volumeText.text = "X"
-                        muted = true
+                        isMuted = true
+                        root.image = root.getIcon()
                     }
                 }
             }
@@ -117,19 +133,28 @@ PopupButton {
 
             spacing: 10
 
-            HDivider {}
-
             Item { Layout.fillHeight: true }
-            
-            RowLayout {
-
-                spacing: 5
 
                 Rectangle {
                     visible: appButton.isSelected
                     width: 100
                     height:50
                 }
+
+                Rectangle {
+                    visible: deviceButton.isSelected
+                    width: 100
+                    height:50
+                }
+
+                HDivider {
+                    passedWidth: 110
+                }
+            
+            RowLayout {
+
+                spacing: 5
+
 
                 HighlightButton{
                     id: appButton
@@ -143,8 +168,8 @@ PopupButton {
 
                 HighlightButton{
                     id: deviceButton
-                    image: "./icons/devices.png"
-
+                    image: "./icons/drivers.png"
+                    isSelected: false
                     onClicked: {
                         deviceButton.isSelected = true
                         appButton.isSelected = false

@@ -12,16 +12,18 @@ Button {
     property bool isCharging: false
     property string batteryPercent: "0"
     property color backgroundColor: "green"
+    property string image : "content/battery/icons/battery-30.png"
 
     icon.height: Sizes.squareIcon
     icon.width: Sizes.squareIcon
-    icon.source: getIcon()
+
+    icon.source: image 
 
     text: "%" + batteryPercent
     display: AbstractButton.TextBesideIcon
 
     background: Rectangle {
-        color: backgroundColor
+        color: parent.backgroundColor
         height: 40
         radius: 12
     }
@@ -38,7 +40,7 @@ Button {
                     pct >= 5  ? "10" :
                                 "0"
 
-        return "./icons/" + prefix + "-" + level + ".png"
+        return "content/battery/icons/" + prefix + "-" + level + ".png"
     }
 
     onClicked: {
@@ -79,6 +81,7 @@ Button {
         stdout: SplitParser {
             onRead: (line) => {
                 batteryControl.batteryPercent = line.trim()
+                batteryControl.image = batteryControl.getIcon()
             }
         }
     }

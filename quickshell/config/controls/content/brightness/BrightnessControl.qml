@@ -9,11 +9,23 @@ import "../../../Colors/"
 import "../../../Sizes/"
 
 PopupButton {
-    id: brightnessButton
-    icon.source: "./icons/brightness-high.png"
+    id: root
+
+    property var image : "content/brightness/icons/brightness-med.png"
+
+    label: brightnessSlider.value.toFixed(2)
+    icon.source: image
 
     required property var rootWindow  
     anchorWindow: rootWindow
+
+    function getIcon() {
+        let prefix =    brightnessSlider.value.toFixed(2) < 0.33 ? "low" :
+                        brightnessSlider.value.toFixed(2) < 0.66 ? "med" :
+                        "high"
+
+        return "content/brightness/icons/brightness-" + prefix + ".png"
+    }
 
     ColumnLayout {
         spacing: 3
@@ -28,8 +40,9 @@ PopupButton {
             value: 0.67
             onValueChanged : {
                 if (!updatingFromSystem) {
-                    setBrightness.command = ["brigthnessctl", "set", value.toFixed(2).toString() * 100 + "%"]
+                    setBrightness.command = ["brightnessctl", "set", value.toFixed(2).toString() * 100 + "%"]
                     setBrightness.running = true
+                    root.image = root.getIcon()
                 }
             }
 
@@ -51,6 +64,7 @@ PopupButton {
                             brightnessSlider.updatingFromSystem = true
                             brightnessSlider.value = parseFloat(match[1])
                             brightnessSlider.updatingFromSystem = false
+                            root.image = root.getIcon()
                         }
                     }
                 }

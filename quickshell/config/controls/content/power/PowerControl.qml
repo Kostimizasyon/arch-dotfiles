@@ -13,7 +13,7 @@ PopupButton {
     icon.source: "./icons/power.png"
 
     required property var rootWindow
-    rootWindow: rootWindow
+    anchorWindow: rootWindow
 
     ColumnLayout {
         anchors.fill: parent
@@ -21,24 +21,23 @@ PopupButton {
         spacing: 10
 
         PowerControl {
-            id: shutdown
-            image: "./icons/power.png"
-            text: "Shutdown"
-            command: ["sh", "-c", "shutdown"]
+            image: "../icons/power.png"
+            label: "Shutdown"
+            command: ["shutdown 0"]
             Layout.fillWidth: true
         }
 
         PowerControl {
-            image: "./icons/reboot.png"
-            text: "Reboot"
-            command: ["sh", "-c", "reboot"]
+            image: "../icons/reboot.png"
+            label: "Reboot"
+            command: ["reboot"]
             Layout.fillWidth: true
         }
 
         PowerControl {
-            image: "./icons/logout.png"
-            text: "Log Out"
-            command: ["sh", "-c", "hyprctl dispatch exit"]
+            image: "../icons/log-out.png"
+            label: "Log Out"
+            command: ["hyprctl dispatch exit"]
             Layout.fillWidth: true
         }
 

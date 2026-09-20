@@ -20,17 +20,28 @@ Rectangle {
 		anchors.fill: parent
 
 		Repeater {
+			id: wsRepeater
+			model: Sizes.wsWindowSize
 
-			model: Sizes.workspaceCount
+			property int focusedId: Hyprland.focusedWorkspace?.id ?? 1
+
+			property int activeIndex : {
+			    let half = Math.floor(Sizes.wsWindowSize / 2)
+			    let start = focusedId - half
+			    // clamp so window doesn't go out of bounds
+			    let maxStart = Sizes.totalWorkspaces - Sizes.wsWindowSize + 1
+			    return Math.max(1, Math.min(start, maxStart))
+			}
 
 			Text {
 				rightPadding: 6
 				leftPadding: 6
 
-				property var hasItem: Hyprland.workspaces.values.find(w => w.id === index + 1)
-				property bool isActive : Hyprland.focusedWorkspace?.id === (index + 1)
+				property var hasItem: Hyprland.workspaces.values.find(w => w.id ===  wsRepeater.activeIndex + index)
+				property bool isActive : Hyprland.focusedWorkspace?.id === ( wsRepeater.activeIndex+ index)
 
-				text: index + 1
+				text: wsRepeater.activeIndex + index
+
 				color: isActive ? Colors.activeColor : (hasItem ?  Colors.fullColor : Colors.emptyColor)
 
 				font {pixelSize: 24 ; bold: isActive}

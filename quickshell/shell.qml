@@ -19,9 +19,10 @@ PanelWindow {
     color: "transparent"
 
     RowLayout {
+
         anchors.fill: parent
-        anchors.leftMargin: 10
-        anchors.rightMargin: 10
+        anchors.leftMargin: 25
+        anchors.rightMargin: 25
         anchors.topMargin: 10
         spacing: 10
 
@@ -31,15 +32,15 @@ PanelWindow {
         // spacer pushes clock to center-ish
         Item { Layout.fillWidth: true }
 
-        // clock (center)
-        Clock {}
-
-        // spacer pushes controls to the right
-        Item { Layout.fillWidth: true }
-
-        // right group
+       // right group
         ControlRow {
             rootWindow: root
         }
     }
+
+        Clock {
+            anchors.topMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
 }

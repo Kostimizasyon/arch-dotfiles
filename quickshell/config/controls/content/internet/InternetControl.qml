@@ -6,14 +6,26 @@ import "../../../Colors/"
 import "../../../Sizes/"
 
 PopupButton {
-    id: internetButton
-    icon.source: "./icons/no-internet.png"
+    id: root
+
+    icon.source: image
+    label : networkName
+
+    property string image : "content/internet/icons/no-internet.png"
+    property string networkName : "No Connection"
 
     required property var rootWindow  
     anchorWindow: rootWindow
 
     property bool isEthernet: false
     property bool isConnected: false
+
+    function getIcon() {
+	           let prefix = isEthernet ? "ethernet" :
+	                   isConnected ? "wifi" : "no-internet"
+		   return "content/internet/icons/" + prefix + ".png"
+    }
+
 
     Timer {
 	interval: 10000
@@ -23,34 +35,58 @@ PopupButton {
 	onTriggered: getNetStatus.running = true
     }
 
-    Process {
-	    id: getNetStatus
-	    running: false
+Process {
+    id: getNetStatus
+    property bool toBreak: false
+    running: false
+    command: ["nmcli", "-f", "TYPE,NAME", "connection", "show", "--active"]
 
-	    command: ["nmcli", "-f", "TYPE", "connection", "show", "--active"]
-	    stdout: SplitParser {
-		    onRead: (line) => {
-			let type = line.trim().toLowerCase()
-			switch (type) {
-				case "ethernet":
-					internetButton.isEthernet = true
-					internetButton.isConnected = true
-					break
-				case "wifi":
-					internetButton.isEthernet = false
-					internetButton.isConnected = true
-					break
-				default:
-					internetButton.isEthernet = false
-					internetButton.isConnected = false
-					break
+    stdout: SplitParser {
+        onRead: (line) => {
+            let type = line.trim().toLowerCase()
+            if (type.split(" ")[0] == "type") {
+                getNetStatus.toBreak = true
+                return
+            }
+            if (getNetStatus.toBreak) {
+                let parts = line.trim().split(/\s{2,}/)
+                let connType = parts[0]?.toLowerCase()
+                let connName = parts[1]
 
-			}
-		    }
+                switch (connType) {
+                    case "ethernet":
+                        root.isEthernet = true
+                        root.isConnected = true
+                        break
+                    case "wifi":
+                        root.isEthernet = false
+                        root.isConnected = true
+                        break
+                    default:
+                        root.isEthernet = false
+                        root.isConnected = false
+                        break
+                }
+                root.networkName = connName || "NULL"
+                root.image = root.getIcon()
 
-	    }
+                getNetStatus.toBreak = false
+                getNetStatus.running = false
+            }
+        }
     }
+}
+	Process {
+          id: getNetName
+  	  running: false
+  	  command: ["sh", "-c", "nmcli -t -f NAME connection show --active | head -1"]
 
+	  stdout: SplitParser {
+       		 onRead: (line) => {
+         	   root.networkName = line.trim()
+        	}
+    	  }
+}
 
 	Column {
 
